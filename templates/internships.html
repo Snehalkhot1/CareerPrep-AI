@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Internship Tracker - CareerPrep AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">💼 Internship Tracker & Explorer</h1>
+    <p class="page-subtitle">Discover opportunities, track application statuses, and launch instant interview preparation.</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <form action="{{ url_for('refresh_internships') }}" method="POST">
+      <button type="submit" class="btn btn-secondary" title="Fetch latest opportunities from public feeds">
+        🔄 Refresh Internships
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Search & Filter Controls -->
+<div class="card" style="margin-bottom: 2rem;">
+  <form action="{{ url_for('internships') }}" method="GET">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end;">
+      <!-- Keyword -->
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">Search Keyword</label>
+        <input type="text" class="form-control" name="keyword" value="{{ filters.keyword }}" placeholder="Role, company, skill...">
+      </div>
+
+      <!-- Technology -->
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">Technology</label>
+        <select class="form-control" name="technology">
+          <option value="All">All Technologies</option>
+          <option value="Python" {% if filters.technology == 'Python' %}selected{% endif %}>Python</option>
+          <option value="Java" {% if filters.technology == 'Java' %}selected{% endif %}>Java</option>
+          <option value="C++" {% if filters.technology == 'C++' %}selected{% endif %}>C++</option>
+          <option value="Web Development" {% if filters.technology == 'Web Development' %}selected{% endif %}>Web Development</option>
+          <option value="JavaScript" {% if filters.technology == 'JavaScript' %}selected{% endif %}>JavaScript</option>
+          <option value="Node.js" {% if filters.technology == 'Node.js' %}selected{% endif %}>Node.js</option>
+          <option value="Data Science" {% if filters.technology == 'Data Science' %}selected{% endif %}>Data Science</option>
+          <option value="AI/ML" {% if filters.technology == 'AI/ML' %}selected{% endif %}>AI/ML</option>
+        </select>
+      </div>
+
+      <!-- Location -->
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">Location</label>
+        <select class="form-control" name="location">
+          <option value="Any">Any Location</option>
+          <option value="Remote" {% if filters.location == 'Remote' %}selected{% endif %}>Remote</option>
+          <option value="Pune" {% if filters.location == 'Pune' %}selected{% endif %}>Pune</option>
+          <option value="Mumbai" {% if filters.location == 'Mumbai' %}selected{% endif %}>Mumbai</option>
+          <option value="Bangalore" {% if filters.location == 'Bangalore' %}selected{% endif %}>Bangalore</option>
+          <option value="Hyderabad" {% if filters.location == 'Hyderabad' %}selected{% endif %}>Hyderabad</option>
+          <option value="Delhi" {% if filters.location == 'Delhi' %}selected{% endif %}>Delhi</option>
+        </select>
+      </div>
+
+      <!-- Stipend -->
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">Stipend Range</label>
+        <select class="form-control" name="stipend">
+          <option value="All">Any Stipend</option>
+          <option value="₹10000+" {% if filters.stipend == '₹10000+' %}selected{% endif %}>₹10,000+ / month</option>
+          <option value="₹5000-10000" {% if filters.stipend == '₹5000-10000' %}selected{% endif %}>₹5,000 - ₹10,000</option>
+          <option value="₹1-5000" {% if filters.stipend == '₹1-5000' %}selected{% endif %}>₹1,000 - ₹5,000</option>
+          <option value="Unpaid" {% if filters.stipend == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+        </select>
+      </div>
+
+      <!-- Type -->
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">Work Type</label>
+        <select class="form-control" name="type">
+          <option value="All">All Types</option>
+          <option value="Work From Home" {% if filters.type == 'Work From Home' %}selected{% endif %}>Work From Home</option>
+          <option value="Hybrid" {% if filters.type == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+          <option value="On-site" {% if filters.type == 'On-site' %}selected{% endif %}>On-site</option>
+        </select>
+      </div>
+
+      <!-- Sort -->
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">Sort By</label>
+        <select class="form-control" name="sort">
+          <option value="latest" {% if filters.sort == 'latest' %}selected{% endif %}>Latest</option>
+          <option value="stipend" {% if filters.sort == 'stipend' %}selected{% endif %}>Highest Stipend</option>
+          <option value="deadline" {% if filters.sort == 'deadline' %}selected{% endif %}>Deadline</option>
+        </select>
+      </div>
+
+      <!-- Filter Buttons -->
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary" style="flex: 1;">Filter</button>
+        <a href="{{ url_for('internships') }}" class="btn btn-secondary" title="Reset Filters">✕</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Internships Grid -->
+<div class="grid-2">
+  {% for item in internships %}
+    {% set app = status_map.get(item.id) %}
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+          <div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: #ffffff;">{{ item.role }}</h3>
+            <div style="font-size: 1rem; font-weight: 600; color: var(--accent);">{{ item.company }}</div>
+          </div>
+          {% if item.is_demo %}
+            <span class="badge badge-neutral" title="Curated fallback dataset">DEMO DATA</span>
+          {% else %}
+            <span class="badge badge-success" title="{{ item.source }}">{{ item.source }}</span>
+          {% endif %}
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0.75rem 0; font-size: 0.85rem; color: var(--text-muted);">
+          <span>📍 {{ item.location }}</span>
+          <span>💼 {{ item.internship_type }}</span>
+          <span>💰 <strong style="color: #34d399;">{{ item.stipend }}</strong></span>
+          <span>⏳ Deadline: {{ item.deadline }}</span>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">
+          {{ item.description }}
+        </p>
+
+        <div style="margin-bottom: 1.25rem;">
+          <div class="form-label" style="font-size: 0.8rem; text-transform: uppercase;">Required Skills:</div>
+          <div>
+            {% for skill in item.get_skills_list() %}
+              <span class="chip">{{ skill }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Footer: Tracking & Interview Preparation -->
+      <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            {% if app %}
+              <span class="badge {% if app.status == 'Applied' %}badge-primary{% elif app.status == 'Selected' %}badge-success{% elif app.status == 'Interview Scheduled' %}badge-info{% elif app.status == 'Rejected' %}badge-danger{% else %}badge-warning{% endif %}">
+                Status: {{ app.status }}
+              </span>
+            {% else %}
+              <span class="badge badge-neutral">Not Tracked</span>
+            {% endif %}
+          </div>
+
+          <!-- Quick Status Updater -->
+          <form action="{{ url_for('save_internship') }}" method="POST" style="display: inline-flex; gap: 0.35rem; align-items: center;">
+            <input type="hidden" name="internship_id" value="{{ item.id }}">
+            <select name="status" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; width: auto;" onchange="this.form.submit()">
+              <option value="" disabled selected>Update Status</option>
+              <option value="Saved">Save</option>
+              <option value="Interested">Interested</option>
+              <option value="Applied">Mark Applied</option>
+              <option value="Interview Scheduled">Interview Scheduled</option>
+              <option value="Selected">Selected</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </form>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <!-- 🎯 The Core Feature: PREPARE FOR INTERVIEW -->
+          <a href="{{ url_for('interview_setup', role=item.role, tech=item.get_skills_list()[0] if item.get_skills_list() else 'Python', internship_id=item.id) }}" 
+             class="btn btn-primary btn-sm" style="flex: 1.5;">
+            🎯 Prepare for Interview
+          </a>
+
+          {% if item.url and item.url != '#' %}
+            <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="flex: 1;">
+              Apply External ↗
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem;">
+      <h3>No internships found matching your filter criteria.</h3>
+      <p style="color: var(--text-muted); margin: 0.75rem 0 1.5rem;">Try resetting your filters or refreshing the opportunity feed.</p>
+      <a href="{{ url_for('internships') }}" class="btn btn-primary">Reset Filters</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Student Profile - CareerPrep AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">👤 Student Profile</h1>
+    <p class="page-subtitle">Manage your academic details, technical skills, and career preferences.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Profile Form -->
+  <div class="card">
+    <h3 class="card-title">✏️ Edit Profile Information</h3>
+
+    <form action="{{ url_for('profile') }}" method="POST" enctype="multipart/form-data">
+      <div class="form-group">
+        <label class="form-label" for="name">Full Name</label>
+        <input type="text" class="form-control" id="name" name="name" value="{{ student.name }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">College Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ student.email }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="college">College / University</label>
+        <input type="text" class="form-control" id="college" name="college" value="{{ student.college }}" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+        <div class="form-group">
+          <label class="form-label" for="degree">Degree</label>
+          <input type="text" class="form-control" id="degree" name="degree" value="{{ student.degree }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="branch">Branch</label>
+          <input type="text" class="form-control" id="branch" name="branch" value="{{ student.branch }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="year">Year of Study</label>
+          <select class="form-control" id="year" name="year">
+            <option value="1st Year" {% if student.year == '1st Year' %}selected{% endif %}>1st Year</option>
+            <option value="2nd Year" {% if student.year == '2nd Year' %}selected{% endif %}>2nd Year</option>
+            <option value="3rd Year" {% if student.year == '3rd Year' %}selected{% endif %}>3rd Year</option>
+            <option value="Final Year" {% if student.year == 'Final Year' %}selected{% endif %}>Final Year</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="skills">Technical Skills (Comma separated)</label>
+        <input type="text" class="form-control" id="skills" name="skills" value="{{ student.skills }}" placeholder="e.g. Python, Java, JavaScript, SQL, Flask">
+        <small style="color: var(--text-muted); font-size: 0.8rem;">Used to match internships and customize AI question difficulty.</small>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="form-group">
+          <label class="form-label" for="preferred_role">Preferred Target Role</label>
+          <select class="form-control" id="preferred_role" name="preferred_role">
+            <option value="Python Developer" {% if student.preferred_role == 'Python Developer' %}selected{% endif %}>Python Developer</option>
+            <option value="Java Developer" {% if student.preferred_role == 'Java Developer' %}selected{% endif %}>Java Developer</option>
+            <option value="Web Developer" {% if student.preferred_role == 'Web Developer' %}selected{% endif %}>Web Developer</option>
+            <option value="Software Developer" {% if student.preferred_role == 'Software Developer' %}selected{% endif %}>Software Developer</option>
+            <option value="Data Analyst" {% if student.preferred_role == 'Data Analyst' %}selected{% endif %}>Data Analyst</option>
+            <option value="AI/ML Intern" {% if student.preferred_role == 'AI/ML Intern' %}selected{% endif %}>AI/ML Intern</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="preferred_location">Preferred Location</label>
+          <select class="form-control" id="preferred_location" name="preferred_location">
+            <option value="Remote" {% if student.preferred_location == 'Remote' %}selected{% endif %}>Remote</option>
+            <option value="Pune" {% if student.preferred_location == 'Pune' %}selected{% endif %}>Pune</option>
+            <option value="Bangalore" {% if student.preferred_location == 'Bangalore' %}selected{% endif %}>Bangalore</option>
+            <option value="Mumbai" {% if student.preferred_location == 'Mumbai' %}selected{% endif %}>Mumbai</option>
+            <option value="Hyderabad" {% if student.preferred_location == 'Hyderabad' %}selected{% endif %}>Hyderabad</option>
+            <option value="Delhi" {% if student.preferred_location == 'Delhi' %}selected{% endif %}>Delhi</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="preferred_type">Internship Work Arrangement</label>
+        <select class="form-control" id="preferred_type" name="preferred_type">
+          <option value="Work From Home" {% if student.preferred_type == 'Work From Home' %}selected{% endif %}>Work From Home</option>
+          <option value="Hybrid" {% if student.preferred_type == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+          <option value="On-site" {% if student.preferred_type == 'On-site' %}selected{% endif %}>On-site</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="resume">Upload Resume (PDF, DOCX, TXT)</label>
+        <input type="file" class="form-control" id="resume" name="resume" accept=".pdf,.docx,.txt">
+        {% if student.resume_filename %}
+          <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #34d399;">
+            ✅ Current file on record: <code>{{ student.resume_filename }}</code>
+          </div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1rem;">
+        💾 Save Profile Changes
+      </button>
+    </form>
+  </div>
+
+  <!-- Profile Preview Card -->
+  <div>
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3 class="card-title">🎓 Student Card Summary</h3>
+      <div style="text-align: center; padding: 1.5rem 0;">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #38bdf8); display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: 700; margin-bottom: 0.75rem;">
+          {{ student.name[:1] }}
+        </div>
+        <h2 style="font-size: 1.4rem;">{{ student.name }}</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">{{ student.email }}</p>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+        <p style="font-size: 0.9rem; margin-bottom: 0.4rem;"><strong>Institution:</strong> {{ student.college }}</p>
+        <p style="font-size: 0.9rem; margin-bottom: 0.4rem;"><strong>Degree & Branch:</strong> {{ student.degree }} &bull; {{ student.branch }}</p>
+        <p style="font-size: 0.9rem; margin-bottom: 0.4rem;"><strong>Academic Standing:</strong> {{ student.year }}</p>
+        <p style="font-size: 0.9rem; margin-bottom: 0.4rem;"><strong>Preferred Role:</strong> {{ student.preferred_role }}</p>
+        <p style="font-size: 0.9rem; margin-bottom: 0.4rem;"><strong>Target Location:</strong> {{ student.preferred_location }} ({{ student.preferred_type }})</p>
+      </div>
+
+      <div style="margin-top: 1rem;">
+        <div class="form-label">Active Skills:</div>
+        <div>
+          {% for skill in student.get_skills_list() %}
+            <span class="chip">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Action Card -->
+    <div class="card">
+      <h3 class="card-title">🎯 Instant Targeted Preparation</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        Launch an interview simulation tailored specifically to your preferred role: <strong>{{ student.preferred_role }}</strong>.
+      </p>
+      <a href="{{ url_for('interview_setup', role=student.preferred_role, tech=student.get_skills_list()[0] if student.get_skills_list() else 'Python') }}" class="btn btn-accent btn-block">
+        Start Tailored Mock Interview &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

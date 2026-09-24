@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Evaluation Report - CareerPrep AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="badge badge-success" style="margin-bottom: 0.5rem;">Report Generated Successfully</span>
+    <h1 class="page-title">📊 Interview Performance Evaluation Report</h1>
+    <p class="page-subtitle">
+      Role: <strong>{{ interview.role }}</strong> &bull; Tech: <strong>{{ interview.technology }}</strong> &bull; Level: <strong>{{ interview.difficulty }}</strong> &bull; Date: {{ interview.date.strftime('%B %d, %Y') }}
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('interview_setup', role=interview.role, tech=interview.technology) }}" class="btn btn-primary">
+      🔄 Retake Interview
+    </a>
+    <a href="{{ url_for('history') }}" class="btn btn-secondary">
+      📜 All Past Reports
+    </a>
+  </div>
+</div>
+
+<!-- Scorecard Summary Cards -->
+<div class="grid-4" style="margin-bottom: 2rem;">
+  <div class="card" style="text-align: center; border-top: 4px solid var(--accent);">
+    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Overall Score</div>
+    <div style="font-size: 2.8rem; font-weight: 800; color: #ffffff; margin: 0.25rem 0;">{{ interview.overall_score }}%</div>
+    <span class="badge {{ badge_class }}">{{ grade_text }}</span>
+  </div>
+
+  <div class="card" style="text-align: center; border-top: 4px solid #10b981;">
+    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Technical Knowledge</div>
+    <div style="font-size: 2.5rem; font-weight: 700; color: #34d399; margin: 0.25rem 0;">{{ interview.technical_score }}%</div>
+    <div style="font-size: 0.8rem; color: var(--text-dim);">Core concepts & accuracy</div>
+  </div>
+
+  <div class="card" style="text-align: center; border-top: 4px solid #38bdf8;">
+    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Relevance & Focus</div>
+    <div style="font-size: 2.5rem; font-weight: 700; color: #38bdf8; margin: 0.25rem 0;">{{ interview.relevance_score }}%</div>
+    <div style="font-size: 0.8rem; color: var(--text-dim);">Addressing question directly</div>
+  </div>
+
+  <div class="card" style="text-align: center; border-top: 4px solid #f59e0b;">
+    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Completeness & Clarity</div>
+    <div style="font-size: 2.5rem; font-weight: 700; color: #fbbf24; margin: 0.25rem 0;">{{ interview.completeness_score }}%</div>
+    <div style="font-size: 0.8rem; color: var(--text-dim);">Depth: {{ interview.completeness_score }}% &bull; Clarity: {{ interview.clarity_score }}%</div>
+  </div>
+</div>
+
+<!-- Synthesis & Radar Visualization -->
+<div class="grid-2" style="margin-bottom: 2.5rem;">
+  <!-- Executive Summary -->
+  <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+      <h3 class="card-title">📝 Panel Evaluation Summary</h3>
+      <p style="font-size: 1.05rem; line-height: 1.6; color: var(--text-main); margin-bottom: 1.5rem;">
+        {{ interview.feedback_summary }}
+      </p>
+
+      <div style="margin-bottom: 1.25rem;">
+        <h4 style="color: #34d399; font-size: 0.95rem; margin-bottom: 0.5rem;">🌟 Demonstrated Strengths</h4>
+        <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-muted);">
+          {% for st in interview.get_strengths() %}
+            <li style="margin-bottom: 0.35rem;">{{ st }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="color: #fbbf24; font-size: 0.95rem; margin-bottom: 0.5rem;">⚠️ Recommended Areas for Growth</h4>
+        <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-muted);">
+          {% for imp in interview.get_improvements() %}
+            <li style="margin-bottom: 0.35rem;">{{ imp }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Recommended Topics Chips -->
+    <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem;">
+      <div class="form-label" style="font-size: 0.8rem; text-transform: uppercase;">🎯 Targeted Study Topics for Placements:</div>
+      <div>
+        {% for topic in interview.get_recommended_topics() %}
+          <span class="chip" style="background-color: rgba(37, 99, 235, 0.2); border-color: rgba(37, 99, 235, 0.4); color: #60a5fa; font-weight: 600;">
+            {{ topic }}
+          </span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Competency Radar Chart -->
+  <div class="card">
+    <h3 class="card-title">📈 Competency Profile Visualization</h3>
+    <div style="height: 300px; position: relative; display: flex; justify-content: center;">
+      <canvas id="feedbackRadarChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Question-by-Question Deep Dive Analysis -->
+<div class="card">
+  <h3 class="card-title" style="margin-bottom: 1.5rem;">📋 Question-by-Question Detailed Analysis</h3>
+
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    {% for q in interview.questions %}
+      {% set ans = q.answer %}
+      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <span class="badge badge-primary">Question {{ q.question_order }}</span>
+            <span class="badge badge-neutral">{{ q.question_type }}</span>
+            <span class="badge badge-info">{{ q.topic }}</span>
+          </div>
+          {% if ans %}
+            <span class="badge {% if ans.score >= 7.5 %}badge-success{% elif ans.score >= 5.0 %}badge-info{% else %}badge-warning{% endif %}">
+              Score: {{ ans.score }} / 10
+            </span>
+          {% else %}
+            <span class="badge badge-danger">Unanswered</span>
+          {% endif %}
+        </div>
+
+        <h4 style="font-size: 1.1rem; color: #ffffff; margin-bottom: 1rem;">
+          {{ q.question_text }}
+        </h4>
+
+        <!-- Candidate's Response -->
+        <div style="background-color: var(--bg-primary); padding: 1rem; border-radius: var(--radius-sm); border-left: 3px solid var(--accent); margin-bottom: 1rem;">
+          <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.35rem;">
+            Candidate Answer:
+          </div>
+          <p style="font-size: 0.95rem; color: var(--text-main); font-style: italic;">
+            "{{ ans.answer_text if ans else 'No answer provided.' }}"
+          </p>
+        </div>
+
+        {% if ans %}
+          <!-- Metrics Row -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; background-color: rgba(255, 255, 255, 0.02); padding: 0.75rem; border-radius: var(--radius-sm);">
+            <div><span style="color: var(--text-dim); font-size: 0.8rem;">Technical:</span> <strong>{{ ans.technical_correctness }}/10</strong></div>
+            <div><span style="color: var(--text-dim); font-size: 0.8rem;">Relevance:</span> <strong>{{ ans.relevance }}/10</strong></div>
+            <div><span style="color: var(--text-dim); font-size: 0.8rem;">Completeness:</span> <strong>{{ ans.completeness }}/10</strong></div>
+            <div><span style="color: var(--text-dim); font-size: 0.8rem;">Clarity:</span> <strong>{{ ans.clarity }}/10</strong></div>
+          </div>
+
+          <!-- Covered Points -->
+          {% if ans.get_covered_points() %}
+            <div style="margin-bottom: 0.75rem;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: #34d399;">✅ Accurately Addressed:</span>
+              <ul style="padding-left: 1.25rem; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                {% for pt in ans.get_covered_points() %}
+                  <li>{{ pt }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <!-- Missing Points -->
+          {% if ans.get_missing_points() %}
+            <div style="margin-bottom: 0.75rem;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: #fbbf24;">⚠️ Missing or Incomplete Concepts:</span>
+              <ul style="padding-left: 1.25rem; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                {% for pt in ans.get_missing_points() %}
+                  <li>{{ pt }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <!-- Advice -->
+          <div style="font-size: 0.9rem; color: #7dd3fc; margin-top: 0.5rem;">
+            <strong>💡 Suggestion:</strong> {{ ans.suggestion }}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const ctx = document.getElementById('feedbackRadarChart');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Technical Knowledge', 'Relevance', 'Completeness', 'Clarity'],
+          datasets: [{
+            label: 'Candidate Score %',
+            data: [
+              {{ interview.technical_score }},
+              {{ interview.relevance_score }},
+              {{ interview.completeness_score }},
+              {{ interview.clarity_score }}
+            ],
+            backgroundColor: 'rgba(37, 99, 235, 0.25)',
+            borderColor: '#38bdf8',
+            pointBackgroundColor: '#2563eb',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: '#243556' },
+              grid: { color: '#243556' },
+              pointLabels: { color: '#94a3b8', font: { size: 12 } },
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { display: false }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

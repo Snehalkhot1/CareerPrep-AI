@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Practice Mode - CareerPrep AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">✍️ Interactive Practice Mode</h1>
+    <p class="page-subtitle">Refine your technical answers with instant AI evaluation and coaching feedback.</p>
+  </div>
+  <div>
+    <a href="{{ url_for('interview_setup') }}" class="btn btn-secondary btn-sm">Exit Practice</a>
+  </div>
+</div>
+
+{% if current_question %}
+  <!-- Progress Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+    <span style="font-weight: 600; font-size: 0.95rem;">Question {{ current_index + 1 }} of {{ total_count }}</span>
+    <span class="badge badge-primary">{{ current_question.type }} &bull; {{ current_question.difficulty }}</span>
+  </div>
+
+  <div class="progress-bar-container" style="margin-bottom: 2rem;">
+    <div class="progress-bar-fill" style="width: {{ ((current_index + 1) / total_count) * 100 }}%;"></div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Left Column: Question & Answer Form -->
+    <div class="card">
+      <div class="question-text-box" style="margin-bottom: 1.5rem;">
+        <span class="badge badge-info" style="margin-bottom: 0.5rem;">Topic: {{ current_question.topic }}</span>
+        <h2 class="question-title">{{ current_question.question }}</h2>
+      </div>
+
+      <form action="{{ url_for('practice_answer') }}" method="POST">
+        <input type="hidden" name="question_index" value="{{ current_index }}">
+
+        <div class="form-group">
+          <label class="form-label" for="practiceAnswer">Your Answer:</label>
+          <textarea class="form-control" id="practiceAnswer" name="answer_text" rows="6" placeholder="Type your technical explanation here with key definitions and concepts..." required>{{ answer_data.answer_text if answer_data else '' }}</textarea>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; gap: 0.75rem;">
+          {% if current_index > 0 %}
+            <a href="{{ url_for('practice', index=current_index - 1) }}" class="btn btn-secondary">
+              &larr; Previous Question
+            </a>
+          {% else %}
+            <div></div>
+          {% endif %}
+
+          <button type="submit" class="btn btn-primary">
+            ⚡ Submit for Evaluation
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right Column: Instant AI Evaluation & Feedback -->
+    <div>
+      {% if answer_data and answer_data.evaluation %}
+        {% set ev = answer_data.evaluation %}
+        <div class="card" style="border-left: 4px solid var(--success);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 class="card-title" style="margin: 0;">🎯 Answer Scorecard</h3>
+            <span class="badge {% if ev.score >= 7.5 %}badge-success{% elif ev.score >= 5.0 %}badge-info{% else %}badge-warning{% endif %}" style="font-size: 1rem; padding: 4px 12px;">
+              {{ ev.score }} / 10
+            </span>
+          </div>
+
+          <!-- Dimension Meters -->
+          <div style="margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+              <span>Technical Correctness</span>
+              <strong>{{ ev.technical_correctness }} / 10</strong>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill success" style="width: {{ ev.technical_correctness * 10 }}%;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+              <span>Relevance</span>
+              <strong>{{ ev.relevance }} / 10</strong>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" style="width: {{ ev.relevance * 10 }}%;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+              <span>Completeness</span>
+              <strong>{{ ev.completeness }} / 10</strong>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill warning" style="width: {{ ev.completeness * 10 }}%;"></div>
+            </div>
+          </div>
+
+          <!-- Covered Points -->
+          {% if ev.covered_points %}
+            <div style="margin-bottom: 1rem;">
+              <div class="form-label" style="color: #34d399; font-size: 0.85rem;">✅ Key Concepts Covered:</div>
+              <ul style="padding-left: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+                {% for pt in ev.covered_points %}
+                  <li style="margin-bottom: 0.25rem;">{{ pt }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <!-- Missing Points -->
+          {% if ev.missing_points %}
+            <div style="margin-bottom: 1rem;">
+              <div class="form-label" style="color: #fbbf24; font-size: 0.85rem;">⚠️ Concepts Missed / To Add:</div>
+              <ul style="padding-left: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+                {% for pt in ev.missing_points %}
+                  <li style="margin-bottom: 0.25rem;">{{ pt }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <!-- Suggestion -->
+          <div style="background-color: var(--bg-surface); padding: 0.85rem; border-radius: var(--radius-sm); font-size: 0.9rem; margin-bottom: 1.5rem; border-left: 3px solid var(--accent);">
+            <strong>💡 Coaching Advice:</strong> {{ ev.suggestion }}
+          </div>
+
+          <!-- Navigation -->
+          <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+            {% if current_index + 1 < total_count %}
+              <a href="{{ url_for('practice', index=current_index + 1) }}" class="btn btn-primary">
+                Next Question &rarr;
+              </a>
+            {% else %}
+              <a href="{{ url_for('dashboard') }}" class="btn btn-success">
+                🎉 Finish Practice & Return to Dashboard
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% else %}
+        <!-- Placeholder before submission -->
+        <div class="card" style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
+          <h3>AI Evaluation Ready</h3>
+          <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+            Type your answer in the box on the left and click <strong>"Submit for Evaluation"</strong>. 
+            The system will analyze your technical points, completeness, and clarity in real time.
+          </p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% else %}
+  <div class="card" style="text-align: center; padding: 3rem;">
+    <h3>No active practice questions.</h3>
+    <p style="color: var(--text-muted); margin: 0.75rem 0 1.5rem;">Generate a question bank first to start practicing.</p>
+    <a href="{{ url_for('interview_setup') }}" class="btn btn-primary">Setup Practice Session</a>
+  </div>
+{% endif %}
+{% endblock %}

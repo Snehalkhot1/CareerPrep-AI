@@ -1,0 +1,69 @@
+{% extends "base.html" %} {% block title %}Login - CareerPrep AI{% endblock %} {% block content %}
+<div class="login-shell">
+    <div class="auth-layout">
+        <aside class="auth-visual">
+            <div class="visual-badge">CareerPrep AI</div>
+            <h2>Prepare smarter for every internship interview.</h2>
+            <p>Track opportunities, practice AI mock interviews, and monitor your growth in one streamlined workflow.</p>
+
+            <div class="mini-panel">
+                <div class="mini-stat">
+                    <span>Interview score</span>
+                    <strong>89%</strong>
+                </div>
+                <div class="mini-track">
+                    <span>Progress</span>
+                    <div class="mini-bar"><i></i></div>
+                </div>
+            </div>
+
+            <ul class="feature-list">
+                <li>AI-powered mock interviews</li>
+                <li>Internship tracking dashboard</li>
+                <li>Personalized performance insights</li>
+            </ul>
+        </aside>
+
+        <div class="login-card">
+            <div class="login-header">
+                <div class="brand-mark">⚡</div>
+                <h1>Welcome back</h1>
+                <p>Sign in to continue your internship and interview journey.</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('login') }}" class="login-form">
+                <div class="form-group">
+                    <label for="email" class="form-label">College email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="student@college.edu" required>
+                </div>
+
+                <div class="form-group password-field">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+                    <button type="button" class="toggle-password" aria-label="Show password">Show</button>
+                </div>
+
+                <div class="form-meta">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember" checked>
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block">Login</button>
+            </form>
+
+            <div class="login-help">
+                <span>Demo account:</span>
+                <strong>aditya.sharma@college.edu</strong>
+                <span class="demo-password"> / careerprep123</span>
+            </div>
+
+            <div class="signup-link">
+                Don’t have an account? <a href="{{ url_for('signup') }}">Create one</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

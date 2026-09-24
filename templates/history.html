@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Interview History - CareerPrep AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📜 Mock Interview Performance History</h1>
+    <p class="page-subtitle">Track your preparation trajectory, previous feedback reports, and score improvements over time.</p>
+  </div>
+  <div>
+    <a href="{{ url_for('interview_setup') }}" class="btn btn-primary">
+      🎤 Attend New Mock Interview
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  {% if interviews %}
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Role & Technology</th>
+            <th>Difficulty</th>
+            <th>Questions</th>
+            <th>Duration</th>
+            <th>Overall Score</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for iv in interviews %}
+            <tr>
+              <td style="color: var(--text-muted); font-size: 0.9rem;">
+                {{ iv.date.strftime('%b %d, %Y - %I:%M %p') }}
+              </td>
+              <td>
+                <strong style="color: #ffffff;">{{ iv.role }}</strong>
+                <div style="font-size: 0.8rem; color: var(--accent);">{{ iv.technology }} &bull; {{ iv.interview_type }}</div>
+              </td>
+              <td>
+                <span class="badge {% if iv.difficulty == 'Hard' %}badge-danger{% elif iv.difficulty == 'Medium' %}badge-warning{% else %}badge-success{% endif %}">
+                  {{ iv.difficulty }}
+                </span>
+              </td>
+              <td>{{ iv.total_questions }} Questions</td>
+              <td style="color: var(--text-muted); font-size: 0.9rem;">
+                {% if iv.duration_seconds %}
+                  {{ (iv.duration_seconds // 60) }}m {{ (iv.duration_seconds % 60) }}s
+                {% else %}
+                  &mdash;
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge {% if iv.overall_score >= 75 %}badge-success{% elif iv.overall_score >= 60 %}badge-info{% elif iv.overall_score >= 45 %}badge-warning{% else %}badge-danger{% endif %}" style="font-size: 0.9rem; padding: 4px 10px;">
+                  {{ iv.overall_score }}%
+                </span>
+              </td>
+              <td>
+                <a href="{{ url_for('feedback_report', interview_id=iv.id) }}" class="btn btn-secondary btn-sm">
+                  View Full Report &rarr;
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 3rem 1rem;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🎙️</div>
+      <h3>No interview records found yet.</h3>
+      <p style="color: var(--text-muted); margin: 0.75rem 0 1.5rem;">
+        Take your first AI mock interview to test your technical skills and receive a comprehensive viva-ready evaluation.
+      </p>
+      <a href="{{ url_for('interview_setup') }}" class="btn btn-primary">Start First Interview</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

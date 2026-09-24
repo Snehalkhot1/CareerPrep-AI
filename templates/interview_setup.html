@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Interview Setup - CareerPrep AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">🎯 AI Interview Preparation & Simulation Setup</h1>
+    <p class="page-subtitle">Configure your mock panel or generate customized technical question banks.</p>
+  </div>
+</div>
+
+{% if associated_internship %}
+  <div class="alert alert-info" style="margin-bottom: 2rem;">
+    <div>
+      <strong>🔗 Connected to Internship Opportunity:</strong>
+      <span>{{ associated_internship.role }} at {{ associated_internship.company }}</span>
+      <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 0.2rem;">Role and technology requirements have been pre-configured automatically.</div>
+    </div>
+  </div>
+{% endif %}
+
+<div class="grid-2">
+  <!-- Mock Interview Setup Form -->
+  <div class="card">
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+      <span style="font-size: 1.8rem;">🎙️</span>
+      <div>
+        <h2 style="font-size: 1.35rem; font-weight: 700;">Live AI Mock Interview</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Realistic panel simulation with voice recording, live timer, and comprehensive feedback.</p>
+      </div>
+    </div>
+
+    <form action="{{ url_for('start_mock_interview') }}" method="POST">
+      {% if associated_internship %}
+        <input type="hidden" name="internship_id" value="{{ associated_internship.id }}">
+      {% endif %}
+
+      <div class="form-group">
+        <label class="form-label" for="role">Target Job Role</label>
+        <select class="form-control" id="role" name="role" required>
+          <option value="Python Developer" {% if target_role == 'Python Developer' %}selected{% endif %}>Python Developer</option>
+          <option value="Java Developer" {% if target_role == 'Java Developer' %}selected{% endif %}>Java Developer</option>
+          <option value="Web Developer" {% if target_role == 'Web Developer' %}selected{% endif %}>Web Developer (Full Stack / Frontend)</option>
+          <option value="Software Developer" {% if target_role == 'Software Developer' %}selected{% endif %}>Software Developer / SDE Intern</option>
+          <option value="Data Analyst" {% if target_role == 'Data Analyst' %}selected{% endif %}>Data Analyst</option>
+          <option value="AI/ML Intern" {% if target_role == 'AI/ML Intern' %}selected{% endif %}>AI/ML Engineering Intern</option>
+          <option value="Cloud & DevOps Intern" {% if target_role == 'Cloud & DevOps Intern' %}selected{% endif %}>Cloud & DevOps Intern</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="technology">Core Technology / Stack</label>
+        <select class="form-control" id="technology" name="technology" required>
+          <option value="Python" {% if target_tech == 'Python' %}selected{% endif %}>Python</option>
+          <option value="Java" {% if target_tech == 'Java' %}selected{% endif %}>Java</option>
+          <option value="JavaScript" {% if target_tech == 'JavaScript' %}selected{% endif %}>JavaScript / Web Dev</option>
+          <option value="SQL" {% if target_tech == 'SQL' %}selected{% endif %}>SQL & Databases</option>
+          <option value="AI/ML" {% if target_tech == 'AI/ML' %}selected{% endif %}>Machine Learning / Deep Learning</option>
+          <option value="C++" {% if target_tech == 'C++' %}selected{% endif %}>C++ / Systems</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="form-group">
+          <label class="form-label" for="difficulty">Difficulty Level</label>
+          <select class="form-control" id="difficulty" name="difficulty">
+            <option value="Easy">Easy (Fundamentals)</option>
+            <option value="Medium" selected>Medium (Application & OOP)</option>
+            <option value="Hard">Hard (Optimization & Architecture)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="interview_type">Interview Type</label>
+          <select class="form-control" id="interview_type" name="interview_type">
+            <option value="Technical" selected>Technical Only</option>
+            <option value="Mixed">Mixed (Technical + HR)</option>
+            <option value="Behavioral">Behavioral / HR Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="question_count">Number of Questions</label>
+        <select class="form-control" id="question_count" name="question_count">
+          <option value="3">3 Questions (Quick Assessment)</option>
+          <option value="5" selected>5 Questions (Standard Round)</option>
+          <option value="10">10 Questions (Comprehensive Panel)</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1.5rem;">
+        🚀 Start Live Mock Interview
+      </button>
+    </form>
+  </div>
+
+  <!-- Question Bank Explorer & Self-Paced Practice -->
+  <div class="card" id="generate">
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+      <span style="font-size: 1.8rem;">📚</span>
+      <div>
+        <h2 style="font-size: 1.35rem; font-weight: 700;">Question Generator & Practice Mode</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Generate question cards with expected answers and practice with instant feedback.</p>
+      </div>
+    </div>
+
+    <form action="{{ url_for('generate_questions_route') }}" method="POST">
+      <div class="form-group">
+        <label class="form-label" for="gen_role">Role Focus</label>
+        <input type="text" class="form-control" id="gen_role" name="role" value="{{ target_role }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="gen_tech">Technology</label>
+        <select class="form-control" id="gen_tech" name="technology">
+          <option value="Python" {% if target_tech == 'Python' %}selected{% endif %}>Python</option>
+          <option value="Java" {% if target_tech == 'Java' %}selected{% endif %}>Java</option>
+          <option value="JavaScript" {% if target_tech == 'JavaScript' %}selected{% endif %}>JavaScript</option>
+          <option value="SQL" {% if target_tech == 'SQL' %}selected{% endif %}>SQL</option>
+          <option value="AI/ML" {% if target_tech == 'AI/ML' %}selected{% endif %}>AI/ML</option>
+          <option value="C++" {% if target_tech == 'C++' %}selected{% endif %}>C++</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="form-group">
+          <label class="form-label" for="gen_difficulty">Difficulty</label>
+          <select class="form-control" id="gen_difficulty" name="difficulty">
+            <option value="Easy">Easy</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="gen_type">Question Format</label>
+          <select class="form-control" id="gen_type" name="question_type">
+            <option value="Technical" selected>Technical</option>
+            <option value="Theory">Theory & Concepts</option>
+            <option value="Coding">Coding & Optimization</option>
+            <option value="Behavioral">Behavioral</option>
+            <option value="Mixed">Mixed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="gen_count">Quantity</label>
+        <select class="form-control" id="gen_count" name="count">
+          <option value="5" selected>5 Questions</option>
+          <option value="10">10 Questions</option>
+          <option value="15">15 Questions</option>
+          <option value="20">20 Questions</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-secondary btn-block btn-lg" style="margin-top: 1.5rem;">
+        ⚡ Generate Questions
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

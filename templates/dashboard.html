@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - CareerPrep AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">👋 Welcome back, {{ student.name }}</h1>
+    <p class="page-subtitle">{{ student.degree }} in {{ student.branch }} &bull; {{ student.college }} ({{ student.year }})</p>
+  </div>
+  <div>
+    <a href="{{ url_for('interview_setup') }}" class="btn btn-primary">🎯 Start New Mock Interview</a>
+  </div>
+</div>
+
+<!-- Metric Stat Counters -->
+<div class="grid-4" style="margin-bottom: 2rem;">
+  <div class="card">
+    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Available Internships</div>
+    <div style="font-size: 2.2rem; font-weight: 700; color: var(--accent); margin: 0.25rem 0;">{{ stats.total_internships }}</div>
+    <div style="font-size: 0.85rem; color: var(--text-dim);">Live & Curated Database</div>
+  </div>
+
+  <div class="card">
+    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Tracked Applications</div>
+    <div style="font-size: 2.2rem; font-weight: 700; color: #60a5fa; margin: 0.25rem 0;">{{ stats.total_tracked }}</div>
+    <div style="font-size: 0.85rem; color: var(--text-dim);">
+      <span style="color: #34d399;">{{ stats.applied_count }} Applied</span> &bull; 
+      <span>{{ stats.saved_count }} Saved</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Interviews Completed</div>
+    <div style="font-size: 2.2rem; font-weight: 700; color: #a855f7; margin: 0.25rem 0;">{{ interview_stats.completed_count }}</div>
+    <div style="font-size: 0.85rem; color: var(--text-dim);">Technical & HR Simulations</div>
+  </div>
+
+  <div class="card">
+    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Average Interview Score</div>
+    <div style="font-size: 2.2rem; font-weight: 700; color: #10b981; margin: 0.25rem 0;">{{ interview_stats.avg_score }}%</div>
+    <div style="font-size: 0.85rem; color: var(--text-dim);">
+      Latest: <strong>{{ interview_stats.latest_score }}%</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Charts and Analytics Grid -->
+<div class="grid-2" style="margin-bottom: 2rem;">
+  <!-- Chart 1: Application Funnel Distribution -->
+  <div class="card">
+    <h3 class="card-title">📌 Application Pipeline</h3>
+    <div style="height: 240px; position: relative; display: flex; justify-content: center;">
+      <canvas id="applicationChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart 2: Skill & Rubric Performance -->
+  <div class="card">
+    <h3 class="card-title">📊 Competency Evaluation Rubric</h3>
+    <div style="height: 240px; position: relative; display: flex; justify-content: center;">
+      <canvas id="rubricChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Lower Section: Recent Applications & Recent Interviews -->
+<div class="grid-2">
+  <!-- Recent Applications -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="card-title" style="margin: 0;">💼 Tracked Internships</h3>
+      <a href="{{ url_for('internships') }}" class="btn btn-secondary btn-sm">View All</a>
+    </div>
+
+    {% if stats.recent_applications %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Company</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for app in stats.recent_applications %}
+              <tr>
+                <td><strong>{{ app.internship.role }}</strong></td>
+                <td style="color: var(--text-muted);">{{ app.internship.company }}</td>
+                <td>
+                  <span class="badge {% if app.status == 'Applied' %}badge-primary{% elif app.status == 'Selected' %}badge-success{% elif app.status == 'Interview Scheduled' %}badge-info{% elif app.status == 'Rejected' %}badge-danger{% else %}badge-warning{% endif %}">
+                    {{ app.status }}
+                  </span>
+                </td>
+                <td>
+                  <a href="{{ url_for('interview_setup', role=app.internship.role, tech=app.internship.skills.split(',')[0], internship_id=app.internship.id) }}" class="btn btn-accent btn-sm" title="Prepare for this interview">
+                    🎯 Practice
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); padding: 1rem 0;">No internships saved or tracked yet. Discover exciting roles now!</p>
+      <a href="{{ url_for('internships') }}" class="btn btn-primary btn-sm">Explore Open Internships</a>
+    {% endif %}
+  </div>
+
+  <!-- Recent Mock Interviews -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 class="card-title" style="margin: 0;">🎙️ Recent Mock Interviews</h3>
+      <a href="{{ url_for('history') }}" class="btn btn-secondary btn-sm">Full History</a>
+    </div>
+
+    {% if recent_interviews %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Role / Tech</th>
+              <th>Date</th>
+              <th>Score</th>
+              <th>Report</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for iv in recent_interviews %}
+              <tr>
+                <td>
+                  <strong>{{ iv.role }}</strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ iv.technology }} &bull; {{ iv.difficulty }}</div>
+                </td>
+                <td style="color: var(--text-muted); font-size: 0.85rem;">{{ iv.date.strftime('%b %d, %Y') }}</td>
+                <td>
+                  <span class="badge {% if iv.overall_score >= 75 %}badge-success{% elif iv.overall_score >= 60 %}badge-info{% elif iv.overall_score >= 45 %}badge-warning{% else %}badge-danger{% endif %}">
+                    {{ iv.overall_score }}%
+                  </span>
+                </td>
+                <td>
+                  <a href="{{ url_for('feedback_report', interview_id=iv.id) }}" class="btn btn-secondary btn-sm">
+                    View
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); padding: 1rem 0;">No mock interviews recorded yet. Attend your first interview to benchmark your skills!</p>
+      <a href="{{ url_for('interview_setup') }}" class="btn btn-primary btn-sm">Start Your First Interview</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // 1. Application Funnel Chart
+    const appCtx = document.getElementById('applicationChart');
+    if (appCtx) {
+      new Chart(appCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Saved', 'Applied', 'Interviewing', 'Selected', 'Rejected'],
+          datasets: [{
+            data: [
+              {{ stats.saved_count }},
+              {{ stats.applied_count }},
+              {{ stats.interviewing_count }},
+              {{ stats.selected_count }},
+              {{ stats.rejected_count }}
+            ],
+            backgroundColor: ['#f59e0b', '#2563eb', '#38bdf8', '#10b981', '#ef4444'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    // 2. Competency Evaluation Rubric Radar Chart
+    const rubricCtx = document.getElementById('rubricChart');
+    if (rubricCtx) {
+      new Chart(rubricCtx, {
+        type: 'radar',
+        data: {
+          labels: ['Technical Knowledge', 'Relevance', 'Completeness', 'Clarity'],
+          datasets: [{
+            label: 'Average % Score',
+            data: [
+              {{ interview_stats.avg_technical }},
+              {{ interview_stats.avg_relevance }},
+              {{ interview_stats.avg_completeness }},
+              {{ interview_stats.avg_clarity }}
+            ],
+            backgroundColor: 'rgba(56, 189, 248, 0.25)',
+            borderColor: '#38bdf8',
+            pointBackgroundColor: '#2563eb',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: '#243556' },
+              grid: { color: '#243556' },
+              pointLabels: { color: '#94a3b8', font: { size: 11 } },
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

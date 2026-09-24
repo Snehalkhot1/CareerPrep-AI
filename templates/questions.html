@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Generated Questions - CareerPrep AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📚 Generated Interview Questions</h1>
+    <p class="page-subtitle">
+      Target Role: <strong>{{ role }}</strong> &bull; Tech: <strong>{{ technology }}</strong> &bull; Difficulty: <strong>{{ difficulty }}</strong>
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <form action="{{ url_for('start_practice') }}" method="POST">
+      <button type="submit" class="btn btn-primary">
+        ✍️ Start Interactive Practice
+      </button>
+    </form>
+    <a href="{{ url_for('interview_setup') }}" class="btn btn-secondary">Configure New</a>
+  </div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 1.25rem;">
+  {% for q in questions %}
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="badge badge-primary">Q{{ loop.index }}</span>
+          <span class="badge badge-neutral">{{ q.type }}</span>
+          <span class="badge {% if q.difficulty == 'Hard' %}badge-danger{% elif q.difficulty == 'Medium' %}badge-warning{% else %}badge-success{% endif %}">
+            {{ q.difficulty }}
+          </span>
+        </div>
+        <span style="font-size: 0.85rem; color: var(--accent);">Topic: {{ q.topic }}</span>
+      </div>
+
+      <h3 style="font-size: 1.15rem; font-weight: 600; color: #ffffff; margin-bottom: 1rem; line-height: 1.4;">
+        {{ q.question }}
+      </h3>
+
+      <!-- Collapsible Expected Points -->
+      <details style="background-color: var(--bg-surface); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); cursor: pointer;">
+        <summary style="font-weight: 600; color: var(--accent); font-size: 0.9rem;">
+          💡 View Expected Answer Points & Key Concepts
+        </summary>
+        <ul style="margin: 0.75rem 0 0.25rem 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+          {% for pt in q.expected_answer_points %}
+            <li style="margin-bottom: 0.35rem;">{{ pt }}</li>
+          {% endfor %}
+        </ul>
+      </details>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

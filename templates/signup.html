@@ -1,0 +1,60 @@
+{% extends "base.html" %} {% block title %}Create Account - CareerPrep AI{% endblock %} {% block content %}
+<div class="login-shell">
+    <div class="auth-layout">
+        <aside class="auth-visual">
+            <div class="visual-badge">CareerPrep AI</div>
+            <h2>Build your internship edge.</h2>
+            <p>Create your account and start tracking opportunities, practice interviews, and strengthen your profile.</p>
+
+            <div class="mini-panel">
+                <div class="mini-stat">
+                    <span>Profile strength</span>
+                    <strong>92%</strong>
+                </div>
+                <div class="mini-track">
+                    <span>Completion</span>
+                    <div class="mini-bar"><i></i></div>
+                </div>
+            </div>
+
+            <ul class="feature-list">
+                <li>Smart internship tracking</li>
+                <li>AI-assisted interview prep</li>
+                <li>Performance-based progress reviews</li>
+            </ul>
+        </aside>
+
+        <div class="login-card">
+            <div class="login-header">
+                <div class="brand-mark">✦</div>
+                <h1>Create account</h1>
+                <p>Set up your student profile to begin your journey.</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('signup') }}" class="login-form">
+                <div class="form-group">
+                    <label for="name" class="form-label">Full name</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">College email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="student@college.edu" required>
+                </div>
+
+                <div class="form-group password-field">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Create a password" required>
+                    <button type="button" class="toggle-password" aria-label="Show password">Show</button>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block">Create account</button>
+            </form>
+
+            <div class="signup-link">
+                Already have an account? <a href="{{ url_for('login') }}">Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

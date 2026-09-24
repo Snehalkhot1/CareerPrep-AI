@@ -1,0 +1,73 @@
+{% extends "base.html" %} {% block title %}CareerPrep AI - Prepare. Practice. Get Hired.{% endblock %} {% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-copy">
+        <div class="hero-tagline">Prepare. Practice. Get Hired.</div>
+        <h1 class="hero-title">
+            AI-Powered <span>Internship Tracking</span> & <span>Mock Interview</span> System
+        </h1>
+        <p class="hero-desc">
+            Discover internships, tailor your practice, and sharpen your interview skills with a guided AI workflow built for campus placements.
+        </p>
+        <div class="hero-cta">
+            <a href="{{ url_for('internships') }}" class="btn btn-primary btn-lg">🔍 Explore Internships</a>
+            <a href="{{ url_for('interview_setup') }}" class="btn btn-accent btn-lg">🎤 Start Mock Interview</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">📊 View Dashboard</a>
+        </div>
+
+        <div class="feature-row">
+            <span class="feature-pill">AI Interview Coach</span>
+            <span class="feature-pill">Smart Internship Matching</span>
+            <span class="feature-pill">Performance Reports</span>
+        </div>
+    </div>
+
+    <div class="hero-visual" aria-label="CareerPrep dashboard overview">
+        <div class="visual-card main-visual">
+            <img src="{{ url_for('static', filename='images/hero-illustration.svg') }}" alt="CareerPrep dashboard preview" />
+        </div>
+
+        <div class="floating-stat stat-top">
+            <span class="stat-label">Applications</span>
+            <strong>124</strong>
+            <small>+18 this month</small>
+        </div>
+
+        <div class="floating-stat stat-bottom">
+            <span class="stat-label">Interview Score</span>
+            <strong>89%</strong>
+            <small>Top 10% trend</small>
+        </div>
+    </div>
+</section>
+
+<section class="feature-showcase">
+    <div class="section-heading">
+        <span class="eyebrow">How it works</span>
+        <h2>Turn internship research into interview readiness.</h2>
+    </div>
+
+    <div class="workflow-grid">
+        <article class="workflow-card">
+            <div class="step-badge">01</div>
+            <h3>Discover</h3>
+            <p>Browse curated internship opportunities and track the roles that match your goals.</p>
+            <a href="{{ url_for('internships') }}">Explore roles →</a>
+        </article>
+
+        <article class="workflow-card">
+            <div class="step-badge">02</div>
+            <h3>Practice</h3>
+            <p>Generate personalized questions based on the role, stack, and difficulty level you need.</p>
+            <a href="{{ url_for('interview_setup') }}">Prepare interview →</a>
+        </article>
+
+        <article class="workflow-card">
+            <div class="step-badge">03</div>
+            <h3>Improve</h3>
+            <p>Review AI scoring feedback, uncover weak spots, and keep improving with each mock round.</p>
+            <a href="{{ url_for('dashboard') }}">View insights →</a>
+        </article>
+    </div>
+</section>
+{% endblock %}

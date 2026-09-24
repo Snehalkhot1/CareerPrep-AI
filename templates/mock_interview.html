@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Live AI Mock Interview - CareerPrep AI{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 1rem;">
+  <div>
+    <h1 class="page-title">🎙️ AI Mock Interview Simulation</h1>
+    <p class="page-subtitle">
+      Candidate: <strong>{{ student.name }}</strong> &bull; Target Role: <strong>{{ interview.role }}</strong> ({{ interview.technology }})
+    </p>
+  </div>
+  <div style="display: flex; align-items: center; gap: 1rem;">
+    <div class="timer-badge">
+      <span>⏱️</span>
+      <span id="interviewTimer">00:00</span>
+    </div>
+  </div>
+</div>
+
+<!-- Progress Bar -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; font-size: 0.9rem;">
+  <span style="font-weight: 600;">Question {{ current_index + 1 }} of {{ interview.total_questions }}</span>
+  <span class="badge badge-primary">{{ current_question.question_type }} &bull; {{ current_question.difficulty }}</span>
+</div>
+
+<div class="progress-bar-container" style="margin-bottom: 2rem;">
+  <div class="progress-bar-fill" style="width: {{ ((current_index + 1) / interview.total_questions) * 100 }}%;"></div>
+</div>
+
+<!-- Interview Main Console -->
+<div class="interview-box">
+  <!-- AI Interviewer Prompt Header -->
+  <div class="interview-header">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #38bdf8); display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+        🤖
+      </div>
+      <div>
+        <div style="font-weight: 700; color: #ffffff;">AI Interview Panel</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">Assessing: {{ current_question.topic }}</div>
+      </div>
+    </div>
+    <div>
+      <span class="badge badge-neutral">Topic: {{ current_question.topic }}</span>
+    </div>
+  </div>
+
+  <!-- Question Box -->
+  <div class="question-text-box">
+    <div class="question-title">
+      "{{ current_question.question_text }}"
+    </div>
+  </div>
+
+  <!-- Voice Recording Status Alert (Hidden initially) -->
+  <div id="voiceStatus" style="display: none; margin-bottom: 1.25rem;"></div>
+
+  <!-- Voice Recording & Audio Controls -->
+  <div class="voice-controls">
+    <button type="button" id="startRecordBtn" class="btn btn-primary btn-sm">
+      🎤 Start Recording
+    </button>
+    <button type="button" id="stopRecordBtn" class="btn btn-danger btn-sm" disabled>
+      ⏹ Stop Recording
+    </button>
+    <button type="button" id="playRecordBtn" class="btn btn-secondary btn-sm" disabled>
+      ▶ Play Recording
+    </button>
+
+    <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
+      💡 Speak into mic or type directly below
+    </div>
+  </div>
+
+  <!-- Audio Playback Element -->
+  <audio id="audioPreview" controls style="display: none; width: 100%; margin-bottom: 1.25rem; border-radius: var(--radius-sm);"></audio>
+
+  <!-- Answer Submission Form -->
+  <form id="interviewAnswerForm" action="{{ url_for('submit_mock_answer') }}" method="POST">
+    <input type="hidden" name="interview_id" value="{{ interview.id }}">
+    <input type="hidden" name="question_id" value="{{ current_question.id }}">
+    <input type="hidden" name="current_index" value="{{ current_index }}">
+
+    <div class="form-group">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+        <label class="form-label" for="answerText" style="margin-bottom: 0;">
+          📝 Your Response (Auto-transcribed or typed):
+        </label>
+        <span style="font-size: 0.8rem; color: var(--text-dim);">Speech-to-Text syncs automatically</span>
+      </div>
+      <textarea class="form-control" id="answerText" name="answer_text" rows="5" placeholder="Your spoken or typed answer appears here. Explain key concepts, definitions, and examples clearly..." required>{{ existing_answer.answer_text if existing_answer else '' }}</textarea>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        {% if current_index + 1 == interview.total_questions %}
+          🏁 Final question! Submitting will generate your detailed feedback report.
+        {% else %}
+          Next question will load immediately upon submission.
+        {% endif %}
+      </div>
+
+      <button type="submit" id="submitAnswerBtn" class="btn btn-primary btn-lg">
+        {% if current_index + 1 == interview.total_questions %}
+          🏁 Submit & View Final Feedback Report &rarr;
+        {% else %}
+          ➡ Submit Answer & Continue &rarr;
+        {% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+<script src="{{ url_for('static', filename='js/interview.js') }}"></script>
+{% endblock %}
