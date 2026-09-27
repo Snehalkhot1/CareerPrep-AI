@@ -1,4 +1,4 @@
-# CAREERPREP A
+# CAREERPREP AI
 ## 🚀 Live Demo
 [Click here to view the deployed project](https://careerprep-ai-gwtc.onrender.com/)
 
